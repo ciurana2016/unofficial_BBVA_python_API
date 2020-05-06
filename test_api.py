@@ -16,7 +16,6 @@ class ApiTestNewObject(TestCase):
         self.assertEqual(ba.session.headers['Content-Type'], 'application/json')
 
 
-#@skip('No login test required now')
 class ApiTestLogin(TestCase):
     def test_login_wrong_credentials_403(self):
         test_user = '93847582K'
@@ -35,6 +34,27 @@ class ApiTestLogin(TestCase):
         self.assertTrue(ba.session.headers['tsec'])
         self.assertTrue(ba.userid)
         self.assertTrue(len(ba.userid) > 10)
+
+
+class ApiTestTsecAndRequestFuncion(TestCase):
+    def setUp(self):
+        user = os.environ['B_AC']
+        password = os.environ['B_AP']
+        self.ba = BankApi()
+        self.ba.login(user, password)
+
+    def test_login_saves_current_time(self):
+        self.assertTrue(self.ba.last_tsec_time)
+
+    @skip('No way of testing now without w8ing 4 minutes in real life')
+    def test_request_refresh_tsec_if_needed(self):
+        old_tsec = self.ba.session.headers['tsec']
+        time.sleep(250)
+        # Make a request
+        self.ba.get_customer_data()
+        new_tsec = self.ba.session.headers['tsec']
+        # Expect the code to change the tsec on its own with new one
+        self.assertTrue(old_tsec != new_tsec)
 
 
 class ApiTestGetRequests(TestCase):

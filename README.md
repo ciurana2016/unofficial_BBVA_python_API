@@ -9,7 +9,9 @@ B_AC=DNI
 B_AP=PASS
 ```
 
-### Uso (por ahora)
+Hay un test con **skip** ya que el servidor renueva un header esencial cada 4 minutos, pero el test lo pasa ok.
+
+### Ejemplo de uso
 ```
 python api.py
 ```
