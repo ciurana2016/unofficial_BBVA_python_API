@@ -14,6 +14,7 @@ class BankApi(object):
     REFRESH_TSEC = '/ASO/grantingTicketActions/V01/refreshGrantingTicket/?customerId='
     CUSTOMER_DATA_URL = '/ASO/contextualData/V02/'
     FINANCIAL_DASHBOARD_URL = '/ASO/financialDashBoard/V03/?$customer.id='
+    WIRE_TRANSFER_SIMULATION_URL = '/ASO/wireTransfers/V02/simulation/'
     USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0'
 
     def __init__(self):
@@ -113,6 +114,69 @@ class BankApi(object):
         response = self.request(
             self.BASE_URL + self.FINANCIAL_DASHBOARD_URL + self.userid,
         )
+        return response
+
+    def post_wire_transfer_simulation(self, data):
+        '''
+        Test wire transfer, also gives us a boolean if we can make the transfer
+        without the 2step verification SMS ('regularTransfer': 'C' --> True)
+
+        This function takes data in the following format:
+        data = {
+            'beneficiary_iban': 'SOMEIBAN1234234',
+            'beneficiary_name': 'NAME OF BENEFICIARY',
+            'amount': 100.00,
+            'description': 'SOME CONCEPT TEXT'
+        }
+
+        '''
+        # Get the variables we need
+        financial_dashboard = self.get_financial_dashboard()
+        customer_data = self.get_customer_data()
+        sender_account_id = financial_dashboard['positions'][0]['contract']['account']['id']
+        # Make the post data
+        transfer_data = {
+            'sender': {
+                'account': {
+                    'id': sender_account_id,
+                    'currency': {
+                        'id': 'EUR'
+                    }
+                },
+                'customer': {
+                    'id': self.userid,
+                    'name': customer_data['customer']['name']
+                }
+            },
+            'receiver': {
+                'account': {
+                    'formats': {
+                        'iban': data['beneficiary_iban']
+                    }
+                },
+                
+                'beneficiary': {
+                    'name': data['beneficiary_name']
+                }
+            },
+            'amount': {
+                'amount': data['amount'],
+                'currency': 'EUR'
+            },
+            'description': data['description'],
+            'expensesType': {
+                'id': 'A'
+            },
+            'executionType': {
+                'id': 'E'
+            }
+        }
+        # Call the API
+        response = self.request(
+            self.BASE_URL + self.WIRE_TRANSFER_SIMULATION_URL,
+            transfer_data    
+        )
+
         return response
 
 

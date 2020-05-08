@@ -17,4 +17,6 @@ python api.py
 ```
 
 ### Por hacer
-Demasiadas cosas.
+Guardar datos de las llamadas 'customer-data' y 'financial-dashboard' para ser usados mas en adelante, como en las llamadas de test de transferencias.
+
+Hacer transferencias reales, solo si no requiere 2fa. (ahora hace test)

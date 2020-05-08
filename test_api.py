@@ -72,3 +72,23 @@ class ApiTestGetRequests(TestCase):
         dashboard_data = self.ba.get_financial_dashboard()
         self.assertTrue(dashboard_data['assetBalance']['amount'] > -1)
 
+
+class ApiTestPostRequests(TestCase):
+    def setUp(self):
+        user = os.environ['B_AC']
+        password = os.environ['B_AP']
+        self.ba = BankApi()
+        self.ba.login(user, password)
+
+    def test_wire_transfer_simulation_same_account(self):
+        fd = self.ba.get_financial_dashboard()
+        receiver_iban = fd['positions'][0]['contract']['account']['formats']['iban']
+        wt_data = {
+            'beneficiary_iban': receiver_iban,
+            'beneficiary_name': 'TEST NAME',
+            'amount': 0.1,
+            'description': 'test python'
+        }
+        wt_simulation = self.ba.post_wire_transfer_simulation(wt_data)
+        expected_output = 'LAS CUENTAS DE CARGO Y ABONO SON IGUALES                                        '
+        self.assertEqual(expected_output, wt_simulation['error-message'])
